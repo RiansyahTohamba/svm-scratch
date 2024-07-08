@@ -1,14 +1,12 @@
-# 2. hyperplane was 'linear decision boundary' that separate the the data.
-# 3. loss function: hinge loss
-# 4. Regularization: maximize loss function or not?
-# 5. Gradients
-# where learning_rate came from?
+# TODO: where learning_rate came from?
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn import datasets
 import matplotlib.pyplot as plt
 
 class SVM:
+    CLASS_A = -1
+    CLASS_B = 1
     def __init__(self,learning_rate=0.001, lambda_param=0.01, n_iters=1000):
         self.lr = learning_rate
         self.lambda_param = lambda_param
@@ -18,15 +16,16 @@ class SVM:
     
     def fit(self, X,y):
         n_samples, n_feature = X.shape
-        y_ = np.where(y<=0,-1,1)
+        y_ = np.where(y<=0, self.CLASS_A, self.CLASS_B)
+        
         # init weight
         self.w = np.zeros(n_feature)
         self.b = 0
 
         for _ in range(self.n_iters):
             for idx, x_i in enumerate(X):
+                # hinge loss
                 condition = y_[idx] * ( np.dot(x_i,self.w) - self.b) >= 1
-                # print(type(condition))
                 if condition:
                     self.w -= self.lr * (2 * self.lambda_param * self.w)
                 else:
@@ -40,9 +39,8 @@ class SVM:
 if __name__ == "__main__":
     print('predict something lah...')
     X, y = datasets.make_blobs(n_samples=50, n_features=2, centers=2, cluster_std=1.05, random_state=40)
-    # replace 0 with -1
-    y = np.where(y==0,-1,1)
-    # print(y)
+    y = np.where(y==0, SVM.CLASS_A, SVM.CLASS_B)
+
     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state=123)
     
     clf = SVM()
@@ -61,7 +59,7 @@ if __name__ == "__main__":
         
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-        plt.scatter(X[:,0], X[:,1], marker="o", c=y)
+        plt.scatter(X[:,0], X[:,1], marker="x", c=y)
 
         x0_1 = np.amin(X[:,0])
         x0_2 = np.amax(X[:,0])
@@ -76,7 +74,6 @@ if __name__ == "__main__":
         x1_2_p = get_hyperplane_value(x0_2, clf.w, clf.b,1)
         
         ax.plot([x0_1,x0_2], [x1_1,x1_2], "y--")
-
         ax.plot([x0_1,x0_2], [x1_1_m,x1_2_m], "k")
         ax.plot([x0_1,x0_2], [x1_1_p,x1_2_p], "k")
 
